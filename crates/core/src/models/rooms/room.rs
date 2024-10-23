@@ -17,6 +17,9 @@ pub enum RoomStatus {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Room {
+    #[serde(rename = "_id")]
+    pub id: String,
+    
     pub owner_code: String,
     pub blacklist: Vec<String>,
     pub code: String,
@@ -28,3 +31,5 @@ pub struct Room {
     pub room_start: Option<i128>,
     pub room_end: Option<i128>,
 }
+
+pub struct CreateRoom {}

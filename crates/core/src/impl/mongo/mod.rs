@@ -1,15 +1,30 @@
 use async_std::stream::StreamExt;
-use mongodb::{
-    bson::{doc, to_document, Document},
-    results::{DeleteResult, InsertOneResult, UpdateResult},
-};
-use serde::{de::DeserializeOwned, Serialize};
 use std::{collections::HashMap, ops::Deref};
 
-use crate::utils::result::{Error, Result};
+use crate::{traits::AbstractDatabase, Error, Result};
+use mongodb::{
+    bson::{doc, to_document, Document},
+    results::{InsertOneResult, UpdateResult},
+};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+
+pub mod user {
+    pub mod user;
+}
+
+pub mod room {
+    pub mod room;
+}
+
+pub mod conversation {
+    pub mod conversation;
+    pub mod message;
+}
 
 #[derive(Debug, Clone)]
 pub struct MongoDb(pub ::mongodb::Client, pub String);
+
+impl AbstractDatabase for MongoDb {}
 
 impl Deref for MongoDb {
     type Target = mongodb::Client;
@@ -76,33 +91,21 @@ impl MongoDb {
         Ok(documents)
     }
 
-    async fn find<T: DeserializeOwned + Unpin + Send + Sync>(
-        &self,
-        collection: &'static str,
-        projection: Document,
-    ) -> Result<Vec<T>> {
-        let result: std::result::Result<Vec<T>, Error> =
-            self.find_with_option(collection, projection).await;
-
-        Ok(result?)
-    }
-
     async fn find_one<T: DeserializeOwned + Unpin + Send + Sync>(
         &self,
         collection: &'static str,
-        filter: Document,
+        projection: Document,
     ) -> Result<T> {
-        self.find_one_with_options(collection, filter).await
+        self.find_one_with_options(collection, projection).await
     }
 
     async fn find_one_with_options<T: DeserializeOwned + Unpin + Send + Sync>(
         &self,
         collection: &'static str,
-        filter: Document,
-    ) -> Result<T>
-    {
+        projection: Document,
+    ) -> Result<T> {
         self.col::<T>(collection)
-            .find_one(filter)
+            .find_one(projection)
             .await
             .map_err(|_| Error::DatabaseError {
                 operation: "find_one",
@@ -168,40 +171,16 @@ impl MongoDb {
                 with: collection,
             })
     }
+}
 
-    async fn update_one_by_id<P, T: Serialize>(
-        &self,
-        collection: &'static str,
-        id: &str,
-        partial: T,
-        remove: Vec<&dyn IntoDocumentPath>,
-        prefix: P,
-    ) -> Result<UpdateResult>
-    where
-        T: Send + Sync,
-        P: Into<Option<String>>,
-    {
-        self.update_one(collection, doc! {"_id":id}, partial, remove, prefix)
-            .await
-    }
+#[derive(Deserialize)]
+pub struct DocumentId {
+    #[serde(rename = "_id")]
+    pub id: String,
+}
 
-    async fn delete_one(
-        &self,
-        collection: &'static str,
-        projection: Document,
-    ) -> Result<DeleteResult> {
-        self.col::<Document>(collection)
-            .delete_one(projection)
-            .await
-            .map_err(|_| Error::DatabaseError {
-                operation: "delete_one",
-                with: collection,
-            })
-    }
-
-    async fn delete_one_by_id(&self, collection: &'static str, id: &str) -> Result<DeleteResult> {
-        self.delete_one(collection, doc! {"_id":id}).await
-    }
+pub trait IntoDocumentPath: Send + Sync {
+    fn as_path(&self) -> Option<&'static str>;
 }
 
 pub fn prefix_key<T: Serialize>(t: &T, prefix: &str) -> HashMap<String, serde_json::Value> {
@@ -212,16 +191,4 @@ pub fn prefix_key<T: Serialize>(t: &T, prefix: &str) -> HashMap<String, serde_js
         .filter(|(_k, v)| !v.is_null())
         .map(|(k, v)| (format!("{}{}", prefix.to_owned(), k), v))
         .collect()
-}
-
-pub trait IntoDocumentPath: Send + Sync {
-    fn as_path(&self) -> Option<&'static str>;
-}
-
-#[macro_export]
-#[cfg(debug_assertions)]
-macro_rules! query {
-    ( $self: ident, $type: ident, $collection: expr, $($rest:expr),+ ) => {
-        Ok($self.$type($collection, $($rest),+).await.unwrap())
-    };
 }
