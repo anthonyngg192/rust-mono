@@ -1,7 +1,8 @@
 #[macro_use]
 extern crate async_trait;
 
-pub mod database;
+#[macro_use]
+extern crate async_recursion;
 
 pub mod models;
 
@@ -11,4 +12,7 @@ pub mod utils;
 
 pub mod traits;
 
-pub use utils::result::{Error, Result};
+pub use utils::{
+    environment,
+    result::{Error, Result},
+};
