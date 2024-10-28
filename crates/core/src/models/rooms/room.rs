@@ -24,12 +24,12 @@ pub struct Room {
     pub blacklist: Vec<String>,
     pub code: String,
     pub room_type: RoomType,
-    pub expired_at: i128,
+    pub expired_at: i64,
     pub display_name: String,
     pub status: RoomStatus,
     pub limit: Option<i8>,
-    pub room_start: Option<i128>,
-    pub room_end: Option<i128>,
+    pub room_start: Option<i64>,
+    pub room_end: Option<i64>,
 }
 
 pub struct CreateRoom {}
