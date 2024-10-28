@@ -1,5 +1,7 @@
 use std::ops::Deref;
 
+use mongodb::Client;
+
 use crate::{
     environment::{DATABASE_NAME, DB_CONNECTION_STRING},
     r#impl::mongo::MongoDb,
@@ -30,7 +32,7 @@ impl DatabaseInfo {
                 .await?
             }
             DatabaseInfo::MongoDb { uri, database_name } => {
-                let client = ::mongodb::Client::with_uri_str(uri)
+                let client = Client::with_uri_str(uri)
                     .await
                     .map_err(|_err| "Failed to connection to database".to_string())?;
                 Database::MongoDb(MongoDb(client, database_name))

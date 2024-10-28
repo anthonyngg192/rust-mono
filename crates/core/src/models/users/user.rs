@@ -9,16 +9,16 @@ pub enum Status {
 }
 
 #[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
-#[serde(tag = "Type")]
 pub struct User {
-    #[serde(rename = "_id")]
-    pub id: String,
-    
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schemars(with = "String")]
+    pub id: Option<String>, // Store ObjectId as String
+
     pub email: String,
     pub password: String,
     pub name: String,
     pub code: String,
-    pub password_updated_at: i128,
+    pub password_updated_at: i64,
     pub status: Status,
     pub blacklist: Vec<String>,
 }

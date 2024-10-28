@@ -1,7 +1,7 @@
 use async_std::stream::StreamExt;
 use std::{collections::HashMap, ops::Deref};
 
-use crate::{traits::AbstractDatabase, Error, Result};
+use crate::{environment::DATABASE_NAME, traits::AbstractDatabase, Error, Result};
 use mongodb::{
     bson::{doc, to_document, Document},
     results::{InsertOneResult, UpdateResult},
@@ -36,7 +36,7 @@ impl Deref for MongoDb {
 
 impl MongoDb {
     pub fn db(&self) -> mongodb::Database {
-        self.database("rust_demo")
+        self.database(&DATABASE_NAME)
     }
 
     pub fn col<T>(&self, collection: &str) -> mongodb::Collection<T>
@@ -57,12 +57,16 @@ impl MongoDb {
         self.col::<T>(collection)
             .insert_one(document)
             .await
-            .map_err(|_| Error::DatabaseError {
-                operation: "insert_one",
-                with: collection,
+            .map_err(|err| {
+                println!("{}", err.clone());
+                Error::DatabaseError {
+                    operation: "insert_one",
+                    with: collection,
+                }
             })
     }
 
+    #[allow(dead_code)]
     async fn find_with_option<T: DeserializeOwned + Unpin + Send + Sync>(
         &self,
         collection: &'static str,
@@ -114,6 +118,7 @@ impl MongoDb {
             .ok_or(Error::NotFound)
     }
 
+    #[allow(dead_code)]
     async fn find_one_by_id<T: DeserializeOwned + Unpin + Send + Sync>(
         &self,
         collection: &'static str,
@@ -128,6 +133,7 @@ impl MongoDb {
         .await
     }
 
+    #[allow(dead_code)]
     async fn update_one<P, T: Serialize>(
         &self,
         collection: &'static str,
