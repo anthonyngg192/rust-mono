@@ -1,8 +1,10 @@
 {
     "cSpell.words": [
         "actix",
+        "authen",
         "chrono",
         "dotenv",
+        "jsonwebtoken",
         "LIVEKIT"
     ]
 }

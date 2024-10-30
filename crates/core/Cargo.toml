@@ -27,3 +27,6 @@ bcrypt = "0.15.1"
 
 # wrapping 
 derive_more = "0.99.7"
+
+# JWt
+jsonwebtoken = "9.3.0"

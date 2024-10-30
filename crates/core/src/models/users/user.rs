@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
-#[serde(tag = "Type")]
+// #[serde(tag = "status")]
 pub enum Status {
     Active,
     InActive,
@@ -24,7 +24,7 @@ pub struct User {
 
     #[schemars(with = "String")]
     pub status: Status,
-    
+
     pub blacklist: Vec<String>,
 }
 
@@ -49,4 +49,14 @@ impl fmt::Display for Status {
         };
         write!(f, "{}", s)
     }
+}
+
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+pub struct UserToken {
+    pub iat: i64,
+    // expiration
+    pub exp: i64,
+    // data
+    pub user: User,
+    pub login_session: String,
 }

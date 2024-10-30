@@ -3,7 +3,7 @@ use mongodb::bson::{doc, oid::ObjectId, Document};
 
 use crate::{
     environment::HASH_ROUND,
-    models::users::user::{CreateNewUser, Status, User},
+    models::users::user::{CreateNewUser, Status, User, UserToken},
     r#impl::mongo::MongoDb,
     traits::AbstractUser,
     Error, Result,
@@ -84,5 +84,14 @@ impl AbstractUser for MongoDb {
 
     async fn get_all(&self) -> Result<Vec<User>> {
         self.find_with_option(COL, doc! {}).await
+    }
+
+    async fn validate_user_token(&self, user_token: &UserToken) -> bool {
+        self.col::<Document>(COL)
+            .find_one(doc! {
+                "email":user_token.user.email.clone(),
+            })
+            .await
+            .is_ok()
     }
 }
