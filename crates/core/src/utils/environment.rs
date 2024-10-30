@@ -15,6 +15,13 @@ pub static API_PORT: Lazy<usize> = Lazy::new(|| {
         .unwrap()
 });
 
+pub static HASH_ROUND: Lazy<u32> = Lazy::new(|| {
+    env::var("HASH_ROUND")
+        .expect("Missing HASH_ROUND variable")
+        .parse()
+        .unwrap()
+});
+
 pub static APP_NAME: Lazy<String> =
     Lazy::new(|| env::var("APP_NAME").expect("Missing APP_NAME variable"));
 
@@ -33,3 +40,6 @@ pub static LIVEKIT_HOST: Lazy<String> =
 pub static WEBHOOK_API_SIGNED_KEY: Lazy<String> = Lazy::new(|| {
     env::var("WEBHOOK_API_SIGNED_KEY").expect("Missing WEBHOOK_API_SIGNED_KEY variable")
 });
+
+pub static SALT_STRING: Lazy<String> =
+    Lazy::new(|| env::var("SALT_STRING").expect("Missing SALT_STRING variable"));

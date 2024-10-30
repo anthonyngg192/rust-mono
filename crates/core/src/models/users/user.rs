@@ -1,3 +1,5 @@
+use core::fmt;
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -19,6 +21,32 @@ pub struct User {
     pub name: String,
     pub code: String,
     pub password_updated_at: i64,
+
+    #[schemars(with = "String")]
     pub status: Status,
+    
     pub blacklist: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+pub struct CreateNewUser {
+    pub email: String,
+    pub name: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+pub struct NewUserPayload {
+    pub email: String,
+    pub name: String,
+    pub password: String,
+}
+
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Status::Active => "Active",
+            Status::InActive => "InActive",
+        };
+        write!(f, "{}", s)
+    }
 }

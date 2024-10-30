@@ -1,10 +1,7 @@
 use actix_web::{middleware, web, App, HttpServer};
 use core::database::DatabaseInfo;
 use env_logger;
-use routes::auth::{
-    login::get_products,
-    testing::{testing_create_user, testing_fn},
-};
+use routes::auth::{login::get_products, testing::create_user};
 use std::env;
 // #[macro_use]
 // extern crate serde_json;
@@ -24,8 +21,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(db.clone()).clone())
             .service(get_products)
-            .service(testing_fn)
-            .service(testing_create_user)
+            .service(create_user)
             .wrap(middleware::Logger::default())
     })
     .bind(("127.0.0.1", 8080))?
